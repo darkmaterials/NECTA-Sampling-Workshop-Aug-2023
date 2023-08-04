@@ -1,20 +1,3 @@
-<<<<<<< HEAD
-#Read libraries 
-library(dplyr)
-
-
-#Do Randomization 
-#setwd("C:\\Users\\kevin\\Github\\NECTA-Sampling-Workshop-Aug-2023")
-df = read.csv("C:\\Users\\kevin\\Github\\NECTA-Sampling-Workshop-Aug-2023\\Simulated Dataset for Training\\sim_student_3Rs_data - Aug 4 2023.csv")
-
-#Set seed to make our random sampling reproducible 
-set.seed(211667)
-
-#read_dta("")
-
-
-#Randomize with SRS 
-=======
 #RCode For Sampling Exercises 
 
 #Formatted Exercise List here: 
@@ -101,7 +84,6 @@ df = read.csv("C:\\Users\\kevin\\Github\\NECTA-Sampling-Workshop-Aug-2023\\Simul
 #Randomize with SRS 
 N <- 100 
 
->>>>>>> main
 pupil_sample <- df %>% mutate(random = runif(nrow(df)))
 
 pupil_sample <-
@@ -111,18 +93,12 @@ pupil_sample <-
 pupil_sample <-
   pupil_sample %>%
   mutate(
-<<<<<<< HEAD
-    sample = case_when(row_number() <= 300 ~ 1,
-                       row_number() > 300  ~ 0)
-  )
-
-=======
     sample = case_when(row_number() <= N ~ 1,
                        row_number() > N  ~ 0)
   )
 
 
-hist(pupil_sample[pupil_sample$sample == 1 ]$orf)
+#hist(pupil_sample[pupil_sample$sample == 1 ]$orf)
 
 pupils_in_sample <- subset(pupil_sample, subset = sample == 1, drop = TRUE)
 
@@ -150,4 +126,3 @@ hist(pupils_in_sample$orf)
 
 
 # 
->>>>>>> main
