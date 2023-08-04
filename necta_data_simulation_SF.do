@@ -121,6 +121,11 @@ order pupilID, after(SchoolNo)
  
 *collapse tot_pupils_in_council, by(Council)
 
+
+
+*Gen unique Pupil ID 
+gen pupil = _n
+order pupil, before(SN)
  
  
 *_______________________________
