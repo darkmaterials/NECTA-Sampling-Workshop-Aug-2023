@@ -5,6 +5,7 @@ df <- data.frame(v1)
 
 set.seed(1000)
 
+
 df2 <- df %>%
   rename(school_id = v1) %>%
   mutate(council_id = round(row_number()/10, 0), # create council ID
