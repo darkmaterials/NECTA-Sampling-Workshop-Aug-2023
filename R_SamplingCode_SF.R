@@ -45,7 +45,7 @@ df = read.csv("C:\\Users\\kevin\\Github\\NECTA-Sampling-Workshop-Aug-2023\\sim_s
 #set.seed(211667)
 
 #Randomize with SRS 
-N <- 50000
+N <- 100 
 
 pupil_sample <- df %>% mutate(random = runif(nrow(df)))
 
@@ -181,6 +181,10 @@ df4 <- df3 %>%
 #drop the pupils with sample==0 (i.e. those not selected)
 df5 <- subset(df4, sample == 1)
 
+#Create histogram of observations in sample
+hist(df5$orf)
+
+
 #THIS CODE BELOW IS FOR STRATIFIED CLUSTER SAMPLING 
 # p <- 0.2 # proportion of units to sample from each council
 # 
@@ -226,13 +230,80 @@ print(paste("95% Confidence Interval:", lower_ci_strat, "-", upper_ci_strat))
 
 
 
+
 #_______________________________________
 #
 # Q7) [Clustered Random Sampling: Councils are Clusters] 
 # We realize now that doing a total SRS across the country is infeasible. One way to cut costs could be to do clustered sampling.
 # 
 # a) Choose 5 council clusters. Sample 5600 students from each cluster/council, which makes for a total sample of 5600 * 5 = 28,000 students. Calculate national estimates of the mean, standard error, and 95% confidence intervals for your 'cluster 3R's survey'. How do they compare to your calculated values for SRS with N=28,000 ? Does this make sense? 
-# 
+
+#Clear environment/variables 
+rm(list=ls()) 
+
+#Load in libraries 
+library(dplyr)
+library(tidyr)
+library(tidyverse)
+library(sampling)
+
+df = read.csv("C:\\Users\\kevin\\Github\\NECTA-Sampling-Workshop-Aug-2023\\sim_student_3Rs_data.csv")
+
+#set.seed(1000)
+
+#Cluster sampling with srswor (i.e. SRS without replacement), where 
+# only 5 council clusters are selected, such that for each of the selected clusters, 
+# all Standard II students are sampled. 
+#Ren verified that each time, X (different) council clusters are drawn, and that ALL
+# pupils are selected for each. As expected, the mean estimates are very unstable, given 
+# there's no stratification and these councils are being selected across the entire country! 
+cl = cluster(df,clustername=c("councilID"),size=5,method="srswor")
+df5 <- getdata(df, cl) 
+
+#Create histogram of observations in sample
+hist(df5$orf)
+
+
+
+# Calculate mean
+mean_strat <- mean(df5$orf)
+
+# Calculate standard deviation
+sd_strat <- sd(df5$orf)
+
+# Calculate standard error of the mean
+sem_strat <- sd(df5$orf) / sqrt(length(df5$orf))
+
+# Calculate 95% confidence interval
+confidence_interval_strat <- t.test(df5$orf)$conf.int
+lower_ci_strat <- confidence_interval_strat[1]
+upper_ci_strat <- confidence_interval_strat[2]
+
+# Print the results
+print(paste("Mean:", mean_strat))
+print(paste("Standard Deviation:", sd_strat))
+print(paste("Standard Error of the Mean:", sem_strat))
+print(paste("95% Confidence Interval:", lower_ci_strat, "-", upper_ci_strat))
+
+
+# [Ren] PROGRESS AS OF AUGUST 5TH: PICK UP HERE NEXT TIME 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # b) In our previous clustering strategy, we only chose a few clusters. Why might this be a problem? To determine this, let's calculate the ICC, the "Intracluster Correlation". 
 #  
 # 
