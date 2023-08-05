@@ -31,8 +31,8 @@ by Council: count
 *Calculate total # of pupils in each council 
 egen tot_2pupils_in_council = sum(std2_t), by(Council)
 
-*Randomly sample 10 percent of the schools within each and every council 
-by Council: sample 10
+*Randomly sample 9.5 percent of the schools within each and every council 
+by Council: sample 9.5
 
 *Check sample of schools equals to 10 percent of schools in region 
 egen sampled_schools= count(SchoolName), by(Council)
@@ -104,7 +104,7 @@ forvalues i = 1/184 {
 		
 		gen a = 8.75 + `i'*0.04 // Range for mean ; 'average' mean across country is 12.43, same as that determined in 2021 3R's report (p19)
 		*gen b = 0.3 + `i'*0.01 // Range for standard deviation 
-		gen b = 15 - `i'*0.08 // Range of standard deviation for each council; 'average' standard deviation across country is 8.94, same as that determined in 2021 3R's report (p19)
+		gen b = 5 - `i'*0.025 // Range of standard deviation for each council; 'average' standard deviation across country is 8.94, same as that determined in 2021 3R's report (p19)
 		replace orf = rnormal(a, b) if flipped_rank==`i' 
 		replace orf = round(orf, 0.5)
 		

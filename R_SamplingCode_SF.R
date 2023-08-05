@@ -9,13 +9,14 @@ rm(list=ls())
 library(dplyr)
 library(tidyr)
 library(tidyverse)
+library(sampling)
 
 
 #_______________________________________
 # READ IN OUR SIMULATED 3R'S STUDENT-LEVEL DATASET (.dta --> csv --> dataframe) 
 
 #setwd("C:\\Users\\kevin\\Github\\NECTA-Sampling-Workshop-Aug-2023")
-df = read.csv("C:\\Users\\kevin\\Github\\NECTA-Sampling-Workshop-Aug-2023\\Simulated Dataset for Training\\sim_student_3Rs_data - Aug 4 2023.csv")
+df = read.csv("C:\\Users\\kevin\\Github\\NECTA-Sampling-Workshop-Aug-2023\\sim_student_3Rs_data.csv")
 
 #_______________________________________
 
@@ -67,6 +68,34 @@ hist(pupils_in_sample$orf)
 #Histogram of orf scores for the sample just selected 
 
 
+
+# Calculate mean
+mean_strat <- mean(pupils_in_sample$orf)
+
+# Calculate standard deviation
+sd_strat <- sd(pupils_in_sample$orf)
+
+# Calculate standard error of the mean
+sem_strat <- sd(pupils_in_sample$orf) / sqrt(length(pupils_in_sample$orf))
+
+# Calculate 95% confidence interval
+confidence_interval_strat <- t.test(pupils_in_sample$orf)$conf.int
+lower_ci_strat <- confidence_interval_strat[1]
+upper_ci_strat <- confidence_interval_strat[2]
+
+# Print the results
+print(paste("Mean:", mean_strat))
+print(paste("Standard Deviation:", sd_strat))
+print(paste("Standard Error of the Mean:", sem_strat))
+print(paste("95% Confidence Interval:", lower_ci_strat, "-", upper_ci_strat))
+
+
+
+
+
+
+
+
 #     
 #     e) Use the result from one of your draws above (choose any one), to calculate the Standard Error of the Mean. It should be different from the first value you calculated for SEM, in part (c). Is it larger or smaller? And why? 
 #   
@@ -82,10 +111,6 @@ hist(pupils_in_sample$orf)
 #   
 #   Hint: Remember from our lecture the definition of the population distribution - it's just all the observations shown on a histogram. What does the sampling distribution represent? 
 #   
-#_______________________________________
-#
-#   Q2) [Regional Estimates] For parts (iii) and (iv), calculate the mean, SE, and 95% CI's for each region, to obtain regional estimates. Graph the histograms of the sampling distribution for each region.  [Note that we skip this for parts (i) and (ii), as the sample size is so low here that there will probably be some regions that don't have any samples.]
-# 
 ##_______________________________________
 # Q3) [Assessing Potential Differences in Performance by Gender] Calculate the mean, SE, and 95% CI's at the national level, for boys vs. girls.  
 # 
@@ -105,22 +130,11 @@ hist(pupils_in_sample$orf)
 # Theme B) Clustered Sampling and Stratification, and Weighting
 # 
 # Q6) [Stratified Random Sampling: Stratify by Region] Let's stratify by region. There are 26 regions in Mainland Tanzania. Stratification by region means that we now have 26 'boxes', and within each of those boxes/regions, we will do a simple random sample. Stratification increases precision, can increase representativeness/coverage (i.e. while SRS or clustering may not be representative, for e.g. if all of the samples/clusters disproportionately occur in a few regions). It also helps ensure adequate sample size/power for regional estimates (e.g. orf means). However, it also increases cost, due to the requirement to survey all strata (in this case, survey every region). 
-# 
-# The current 3R's strategy samples almost ~28,000 Standard II students nationwide. We can do stratification in a very simple way, using the following strategy: 
-# Divide mainland Tanzania into 26 strata, i.e. the 26 regions. We now have 26 'boxes'. 
-# For each and every region, do a simple random sample. For simplicity, we will sample 1077 students from each strata (region). This means 1077 * 26 = 28,002 students in total. 
-# Calculate national estimates of the mean, standard error, and 95% confidence intervals for your "stratified 3R's survey." How do they compare to your calculated values for SRS with N=28,000 ? Does this make sense? 
-# Calculate regional estimates of the mean, standard error, and 95% confidence intervals for your "stratified 3R's survey." 
-#
 
-
-#v1 <- 1:100 # vector of school IDs
-#df <- data.frame(v1)
-
-#Set seed so that our analysis is reproducible. Note that we need to set theseed 
-# using a random number of generator, or else the randomization will itself be
-# deterministic, i.e. not 'truly random'!! Please ask the statisticians in the room
-# about what "true randomness" really means.. 
+#a) The current 3R's strategy samples almost ~28,000 Standard II students nationwide. We can do stratification in a very simple way, using the following strategy: 
+#  Divide mainland Tanzania into 26 strata, i.e. the 26 regions. We now have 26 'boxes'. 
+#For each and every region, do a simple random sample. For simplicity, we will sample 1077 students from each strata (region). This means 1077 * 26 = 28,002 students in total. 
+#Click on your dataframe step-by-step. Write down below what each step of the code is actually doing, by looking at 'df', then 'df2', 'df3', 'df4', and 'df5' in stages. 
 
 #Clear environment/variables 
 rm(list=ls()) 
@@ -129,34 +143,89 @@ rm(list=ls())
 library(dplyr)
 library(tidyr)
 library(tidyverse)
+library(sampling)
 
-df = read.csv("C:\\Users\\kevin\\Github\\NECTA-Sampling-Workshop-Aug-2023\\Simulated Dataset for Training\\sim_student_3Rs_data - Aug 4 2023.csv")
+df = read.csv("C:\\Users\\kevin\\Github\\NECTA-Sampling-Workshop-Aug-2023\\sim_student_3Rs_data.csv")
 
-set.seed(1000)
+#set.seed(1000)
 
-#v1 is vector of schools ID's 
-df2 <- df %>%
-  rename(school_id = v1) %>%
-  mutate(council_id = round(row_number()/10, 0), # create council ID
-         random = runif(n()))
+#We already have the council and school ID's generated 
+# 
+# #v1 is vector of schools ID's
+# #This code generates school ID's, then it generates council ID's
+# df2 <- df %>%
+#   rename(school_id = v1) %>%
+#   mutate(council_id = round(row_number()/10, 0), # create council ID
+#          random = runif(n()))
 
+
+#Assign 'random' number to each number within each region, for every region. 
+df2 <- df %>% mutate(regionID, random = runif(n()))
+#  mutate(rand = sample.int(n()))
+
+#mutate(council_id = round(row_number()/10, 0), # create council ID
+#       random = runif(n()))
+
+#Sort the numbers within each region 
 df3 <- df2 %>%
-  arrange(council_id, random) # sorting by councid_id and random
+  arrange(regionID, random) # sorting by regionID and random
 
-n <- 5 # number of units to sample from each council
+n <- 320 # number of units to sample from each council- 1077/region results in ~28,000 students sampled total
 
 df4 <- df3 %>%
-  group_by(council_id) %>%
+  group_by(regionID) %>%
   mutate(sample = case_when(row_number() <= n ~ 1,
-                            row_number() > n  ~ 0))
+                            row_number() >  n ~ 0))
 
-p <- 0.2 # proportion of units to sample from each council
+#Keep only the pupils with sample==1 (i.e. those selected), and 
+#drop the pupils with sample==0 (i.e. those not selected)
+df5 <- subset(df4, sample == 1)
 
-df5 <- df3 %>%
-  group_by(council_id) %>%
-  mutate(sample = case_when(row_number() <= round(p * n(), 0) ~ 1,
-                            row_number() >  round(p * n(), 0) ~ 0))
-# note that using round() is not needed
+#Create histogram of observations in sample
+hist(df5$orf)
+
+
+#THIS CODE BELOW IS FOR STRATIFIED CLUSTER SAMPLING 
+# p <- 0.2 # proportion of units to sample from each council
+# 
+# df5 <- df3 %>%
+#   group_by(council_id) %>%
+#   mutate(sample = case_when(row_number() <= round(p * n(), 0) ~ 1,
+#                             row_number() >  round(p * n(), 0) ~ 0))
+# # note that using round() is not needed
+
+
+
+#b) Calculate national estimates of the mean, standard error, and 95% confidence intervals for your "stratified 3R's survey." How do they compare to your calculated values for SRS with N=28,000 ? Does this make sense? 
+
+#Now let's calculate the relevant estimates of the population parameters. 
+#Note that we sampled equally from each of the strata, i.e. we sampled 1077 students from each 
+# stratum / region. Technically, to account for the fact that each of the regions 
+# has different numbers of Standard II students, we should account for this by 
+# calculating a weighted average. While that's not so hard, let's not worry about that for now,
+# and just calculate a simple (un-weighted) average. 
+
+
+# Calculate mean
+mean_strat <- mean(df5$orf)
+
+# Calculate standard deviation
+sd_strat <- sd(df5$orf)
+
+# Calculate standard error of the mean
+sem_strat <- sd(df5$orf) / sqrt(length(df5$orf))
+
+# Calculate 95% confidence interval
+confidence_interval_strat <- t.test(df5$orf)$conf.int
+lower_ci_strat <- confidence_interval_strat[1]
+upper_ci_strat <- confidence_interval_strat[2]
+
+# Print the results
+print(paste("Mean:", mean_strat))
+print(paste("Standard Deviation:", sd_strat))
+print(paste("Standard Error of the Mean:", sem_strat))
+print(paste("95% Confidence Interval:", lower_ci_strat, "-", upper_ci_strat))
+
 
 
 
@@ -168,7 +237,73 @@ df5 <- df3 %>%
 # We realize now that doing a total SRS across the country is infeasible. One way to cut costs could be to do clustered sampling.
 # 
 # a) Choose 5 council clusters. Sample 5600 students from each cluster/council, which makes for a total sample of 5600 * 5 = 28,000 students. Calculate national estimates of the mean, standard error, and 95% confidence intervals for your 'cluster 3R's survey'. How do they compare to your calculated values for SRS with N=28,000 ? Does this make sense? 
-# 
+
+#Clear environment/variables 
+rm(list=ls()) 
+
+#Load in libraries 
+library(dplyr)
+library(tidyr)
+library(tidyverse)
+library(sampling)
+
+df = read.csv("C:\\Users\\kevin\\Github\\NECTA-Sampling-Workshop-Aug-2023\\sim_student_3Rs_data.csv")
+
+#set.seed(1000)
+
+#Cluster sampling with srswor (i.e. SRS without replacement), where 
+# only 5 council clusters are selected, such that for each of the selected clusters, 
+# all Standard II students are sampled. 
+#Ren verified that each time, X (different) council clusters are drawn, and that ALL
+# pupils are selected for each. As expected, the mean estimates are very unstable, given 
+# there's no stratification and these councils are being selected across the entire country! 
+cl = cluster(df,clustername=c("councilID"),size=5,method="srswor")
+df5 <- getdata(df, cl) 
+
+#Create histogram of observations in sample
+hist(df5$orf)
+
+
+
+# Calculate mean
+mean_strat <- mean(df5$orf)
+
+# Calculate standard deviation
+sd_strat <- sd(df5$orf)
+
+# Calculate standard error of the mean
+sem_strat <- sd(df5$orf) / sqrt(length(df5$orf))
+
+# Calculate 95% confidence interval
+confidence_interval_strat <- t.test(df5$orf)$conf.int
+lower_ci_strat <- confidence_interval_strat[1]
+upper_ci_strat <- confidence_interval_strat[2]
+
+# Print the results
+print(paste("Mean:", mean_strat))
+print(paste("Standard Deviation:", sd_strat))
+print(paste("Standard Error of the Mean:", sem_strat))
+print(paste("95% Confidence Interval:", lower_ci_strat, "-", upper_ci_strat))
+
+
+# [Ren] PROGRESS AS OF AUGUST 5TH: PICK UP HERE NEXT TIME 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # b) In our previous clustering strategy, we only chose a few clusters. Why might this be a problem? To determine this, let's calculate the ICC, the "Intracluster Correlation". 
 #  
 # 
