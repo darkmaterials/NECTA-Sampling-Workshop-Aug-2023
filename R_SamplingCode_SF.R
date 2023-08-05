@@ -98,13 +98,13 @@ pupil_sample <-
   )
 
 
-hist(pupil_sample[pupil_sample$sample == 1 ]$orf)
+
+#hist(pupil_sample[pupil_sample$sample == 1 ]$orf)
 
 pupils_in_sample <- subset(pupil_sample, subset = sample == 1, drop = TRUE)
 
 hist(pupils_in_sample$orf)
 #Histogram of orf scores for the sample just selected 
-
 
 
 #_________________________________
