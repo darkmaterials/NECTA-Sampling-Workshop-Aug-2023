@@ -1,5 +1,6 @@
 *cd "C:\Users\wb604630\OneDrive - WBG\NECTA"
 clear 
+
 /*************************************************************
 Part 1 Randomly sample 10 percent of schools from each council 
 *****************************************/
@@ -10,6 +11,7 @@ import excel "Copy of Consolidated_Primary_EnrolmentbyGrade_PTR_2022_PSLE2021.xl
 rename TotalStudentStandard2 std2_t
 rename STD2BOYS std2_m
 rename STD2GIRLS std2_f
+rename SchoolNo schoolID
 lab var school_regno "School Registration Number- not in NECTA example data"
 
 *destring variables 
@@ -87,22 +89,40 @@ gen flipped_rank = 185-CouncilSchoolRank
 
 *egen dist = group(flipped_rank)
 *set seed 709196
+
+*_______________________________
+*GENERATE ORF AND ORC SCORES USING NORMAL DISTRIBUTIONS 
+      *NEED TO INCORPORATE ICC INTO DGP SO THAT CLUSTERED SAMPLING DETECTS VARIATION! 
 gen orf=.
+gen region_mean=.
+gen region_sd=.
+*gen orc=.
 
 forvalues i = 1/184 {
 		
-		*Set seed so this random mark allocation is reproducible  
+		*Set seed so this random mark allocation is reproducible?
 		
-		gen a = 11.5 + `i'*0.01 // Range for mean  
-		gen b = 1 + `i'*0.005 // Range for standard deviation 
-		replace orf = rnormal(a,b) if flipped_rank==`i' 	
-		replace orf = round(orf,0.5)
+		gen a = 8.75 + `i'*0.04 // Range for mean ; 'average' mean across country is 12.43, same as that determined in 2021 3R's report (p19)
+		*gen b = 0.3 + `i'*0.01 // Range for standard deviation 
+		gen b = 15 - `i'*0.08 // Range of standard deviation for each council; 'average' standard deviation across country is 8.94, same as that determined in 2021 3R's report (p19)
+		replace orf = rnormal(a, b) if flipped_rank==`i' 
+		replace orf = round(orf, 0.5)
 		
+		*replace orc = rnormal(a, b) if flipped_rank==`i' 
+		*replace orc = rnormal(orc, 0.5) 
+
+		replace region_mean = a if flipped_rank==`i'
+		replace region_sd = b if flipped_rank==`i'
 	    drop a b
+		
 }
 
 
+*Take care of scores out of range (i.e. <0, or >25), by fixing them to 0 or 25, respectively 
+		replace orf = 0 if orf<0 
+		replace orf = 25 if orf>25
 
+		
 sort CouncilSchoolRank, stable
 
 
@@ -113,34 +133,68 @@ drop duplicated n_studetns
 compress 
  
 *
-bysort SN: gen pupilID=_n
+bysort SN: gen student_groupNo=_n
 
-sort Region Council SchoolName pupilID
-order pupilID, after(SchoolNo)
+sort Region Council SchoolName student_groupNo
+order student_groupNo, after(schoolID)
  
  
 *collapse tot_pupils_in_council, by(Council)
 
 
 
+*_______________________________
+*Gen unique ID's at different (administrative) levels 
+
+*[Aidan:] Can we make sure there are unique identifiers for the student, school, district and region?
+*Is there a rural/urban indicator that we are able to include from anywhere?
+
+*Fill in Missing Administrative Identifiers 
+gsort Council -CouncilNo
+carryforward CouncilNo, replace
+
 *Gen unique Pupil ID 
-gen pupil = _n
-order pupil, before(SN)
+rename Region region 
+rename Council council
+
+sort region council SchoolName student_groupNo
+egen regionID = group(region)
+egen councilID = group(council)
+*Already have unique school ID ("PS_____"), so don't need to generate another one
+gen studentID = _n
+order studentID, before(SN)
  
+replace SchoolName = lower(SchoolName)
  
+*Move around variables 
+order regionID, after(SchoolName)
+order councilID, after(regionID) 
+order CouncilNo, after(councilID)
+order CouncilSchoolRank, after(CouncilNo)
+order schoolID, after(CouncilSchoolRank)
+order SN, after(schoolID)
+order studentID, before(student_groupNo)
+
 *_______________________________
 *DATA ANALYSIS 
 
-/* 
+
 *Calc the mean scores by district, for the data we just simulated
-egen orf_mean = mean(orf), by(CouncilSchoolRank)
-*/ 
+
+
+egen orf_councilMean = mean(orf), by(CouncilSchoolRank)
+sum orf 
+count if orf==0 // Count 0 scores 
+count if orf==25 // Count perfect scores
+
+
 
 
 
 
 *_______________________________
 *SAVING 
+
 save sim_student_3Rs_data, replace
  
  
