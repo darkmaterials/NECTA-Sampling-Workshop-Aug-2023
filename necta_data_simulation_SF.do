@@ -23,7 +23,7 @@ foreach var in CLEANCANDS2021 NUMBEROFCANDPASSEDAC AVERAGETOTALMARKS3002021 AVER
 egen n_schoolscouncil = count(SchoolName), by (Council)
 gen s_schoolscouncil= round(n_schoolscouncil*0.1) // Allocation per council is 10%, so multiply by 0.1 
 
-save "necta data.dta", replace // save dta file before editing 
+*save "necta data.dta", replace // save dta file before editing 
 
 sort Council, stable
 by Council: count
@@ -31,8 +31,8 @@ by Council: count
 *Calculate total # of pupils in each council 
 egen tot_2pupils_in_council = sum(std2_t), by(Council)
 
-*Randomly sample 9.5 percent of the schools within each and every council 
-by Council: sample 9.5
+*Randomly sample 9 percent of the schools within each and every council 
+by Council: sample 9
 
 *Check sample of schools equals to 10 percent of schools in region 
 egen sampled_schools= count(SchoolName), by(Council)
@@ -45,7 +45,7 @@ drop n_schoolscouncil s_schoolscouncil sampled_schools
 
 *egen tot_pupils_in_council = sum(std2_t), by(Council)
 
-save "necta_10percent.dta", replace
+*save "necta_10percent.dta", replace
 
 sort SN, stable
 *bysort SN: expand 1
@@ -64,7 +64,7 @@ drop if std2_t==0 //drop schools with zero students in standard 2
 drop check 
 
 
-save "necta_studentlevel.dta", replace
+*save "necta_studentlevel.dta", replace
 
 *egen groupcouncil= group(Council)
 /* 
